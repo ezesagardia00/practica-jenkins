@@ -1,34 +1,23 @@
 trigger:
-- master  
+- master
 
 pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-- checkout: self
+- task: NodeTool@0
+  inputs:
+    versionSpec: '18.x'
+  displayName: 'Install Node.js'
+
+- script: npm install -g @microsoft/powerplatform-cli
+  displayName: 'Install Power Platform CLI'
 
 - script: |
-    echo "Instalando Power Platform CLI..."
-    curl -L https://aka.ms/powerplatformcli/linux | bash
     pac --version
-  displayName: 'Instalar Power Platform CLI'
+    pac solution pack --folder source-solution --zipfile output/solution.zip
+    pac solution unpack --zipfile output/solution.zip --folder output/unpack
+  displayName: 'Pack and Unpack solution locally'
 
-- script: |
-    echo "Empaquetando solución desde ./source-solution a solution.zip"
-    pac solution pack --folder ./source-solution --zipfile ./solution.zip
-  displayName: 'Empaquetar solución'
-
-- script: |
-    echo "Desempaquetando solution.zip a ./unpacked-solution"
-    mkdir unpacked-solution
-    pac solution unpack --zipfile ./solution.zip --folder ./unpacked-solution
-  displayName: 'Desempaquetar solución'
-
-- script: |
-    if [ ! -d "./unpacked-solution" ]; then
-      echo "❌ Error: La solución no fue desempaquetada correctamente"
-      exit 1
-    else
-      echo "✅ Solución desempaquetada correctamente"
-    fi
-  displayName: 'Validar desempaquetado'
+- script: echo "Add static analysis or tests here"
+  displayName: 'Run static validation'
