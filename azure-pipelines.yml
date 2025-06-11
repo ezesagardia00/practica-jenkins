@@ -2,22 +2,24 @@ trigger:
 - master
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: ubuntu-latest
 
 steps:
-- task: NodeTool@0
-  inputs:
-    versionSpec: '18.x'
-  displayName: 'Install Node.js'
-
-- script: npm install -g @microsoft/powerplatform-cli
-  displayName: 'Install Power Platform CLI'
+- script: |
+    echo "Descargando Power Platform CLI..."
+    curl -L https://aka.ms/PowerPlatformCLI-linux -o pac-linux.tar.gz
+    mkdir -p $HOME/.local/bin
+    tar -xzf pac-linux.tar.gz -C $HOME/.local/bin
+    export PATH=$HOME/.local/bin:$PATH
+    echo "Verificando instalación de pac..."
+    pac --version
+  displayName: 'Instalar Power Platform CLI'
 
 - script: |
-    pac --version
+    export PATH=$HOME/.local/bin:$PATH
+    echo "Empaquetando solución..."
+    mkdir -p output
     pac solution pack --folder source-solution --zipfile output/solution.zip
-    pac solution unpack --zipfile output/solution.zip --folder output/unpack
-  displayName: 'Pack and Unpack solution locally'
+  displayName: 'Empaquetar solución'
 
-- script: echo "Add static analysis or tests here"
-  displayName: 'Run static validation'
+# Aquí podés agregar más pasos para publicar el zip, o lo que necesites.
