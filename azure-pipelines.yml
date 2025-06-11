@@ -1,19 +1,34 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
-- master
+- master  
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: 'ubuntu-latest'
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+- checkout: self
 
 - script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+    echo "Instalando Power Platform CLI..."
+    curl -L https://aka.ms/powerplatformcli/linux | bash
+    pac --version
+  displayName: 'Instalar Power Platform CLI'
+
+- script: |
+    echo "Empaquetando solución desde ./source-solution a solution.zip"
+    pac solution pack --folder ./source-solution --zipfile ./solution.zip
+  displayName: 'Empaquetar solución'
+
+- script: |
+    echo "Desempaquetando solution.zip a ./unpacked-solution"
+    mkdir unpacked-solution
+    pac solution unpack --zipfile ./solution.zip --folder ./unpacked-solution
+  displayName: 'Desempaquetar solución'
+
+- script: |
+    if [ ! -d "./unpacked-solution" ]; then
+      echo "❌ Error: La solución no fue desempaquetada correctamente"
+      exit 1
+    else
+      echo "✅ Solución desempaquetada correctamente"
+    fi
+  displayName: 'Validar desempaquetado'
